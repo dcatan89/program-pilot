@@ -1,0 +1,122 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      Role     @default(ADMIN)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+}
+
+model Staff {
+  id            String            @id @default(cuid())
+  name          String
+  email         String?           @unique
+  phone         String?
+  notes         String?
+  isActive      Boolean           @default(true)
+  clearedCities StaffCity[]
+  assignments   StaffAssignment[]
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+}
+
+model City {
+  id          String      @id @default(cuid())
+  name        String      @unique
+  color       String      @default("#3B82F6")
+  staffCities StaffCity[]
+  sessions    Session[]
+  createdAt   DateTime    @default(now())
+}
+
+model StaffCity {
+  id      String @id @default(cuid())
+  staff   Staff  @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  staffId String
+  city    City   @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  cityId  String
+
+  @@unique([staffId, cityId])
+}
+
+model Season {
+  id        String    @id @default(cuid())
+  name      String
+  year      Int
+  isActive  Boolean   @default(true)
+  programs  Program[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Program {
+  id        String    @id @default(cuid())
+  name      String
+  season    Season    @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  seasonId  String
+  sessions  Session[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Session {
+  id           String            @id @default(cuid())
+  program      Program           @relation(fields: [programId], references: [id], onDelete: Cascade)
+  programId    String
+  city         City              @relation(fields: [cityId], references: [id])
+  cityId       String
+  location     String
+  startDate    DateTime
+  endDate      DateTime
+  startTime    String
+  endTime      String
+  sessionType  SessionType       @default(AM)
+  className    String?
+  assignments  StaffAssignment[]
+  noClassDates DateTime[]
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+}
+
+enum SessionType {
+  AM
+  PM
+  FULL_DAY
+}
+
+model StaffAssignment {
+  id        String   @id @default(cuid())
+  staff     Staff    @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  staffId   String
+  session   Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId String
+  isPrimary Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@unique([staffId, sessionId])
+}
+
+model ExternalProgram {
+  id        String   @id @default(cuid())
+  name      String
+  startDate DateTime
+  endDate   DateTime
+  color     String   @default("#F97316")
+  notes     String?
+  createdAt DateTime @default(now())
+}
