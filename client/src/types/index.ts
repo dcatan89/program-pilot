@@ -71,3 +71,17 @@ export interface Conflict {
   session1: string
   session2: string
 }
+
+export interface Shift {
+  id: string
+  staffId: string
+  staff: Staff
+  cityId: string
+  city: City
+  date: string
+  startTime: string
+  endTime: string
+  location: string
+  sessionType: 'AM' | 'PM' | 'FULL_DAY'
+  notes?: string
+}

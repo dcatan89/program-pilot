@@ -1,38 +1,46 @@
 import { Router } from 'express'
-import bcrypt from 'bcryptjs'
-import jwt from 'jsonwebtoken'
 import { prisma } from '../lib/prisma'
+import { requireAuth, AuthRequest } from '../middleware/auth'
 
 const router = Router()
 
-router.post('/login', async (req, res) => {
+// Upsert a User row after Supabase Auth login (Google or email)
+router.post('/sync', requireAuth, async (req: AuthRequest, res) => {
+  const { id: supabaseId, email } = req.user!
+  const name = (req.body.name as string) || email.split('@')[0]
   try {
-    const { email, password } = req.body
-    const user = await prisma.user.findUnique({ where: { email } })
-    if (!user) return res.status(401).json({ error: 'Invalid credentials' })
-    const valid = await bcrypt.compare(password, user.password)
-    if (!valid) return res.status(401).json({ error: 'Invalid credentials' })
-    const token = jwt.sign(
-      { id: user.id, email: user.email, role: user.role },
-      process.env.JWT_SECRET!,
-      { expiresIn: '7d' }
-    )
-    res.json({ token, user: { id: user.id, email: user.email, name: user.name, role: user.role } })
-  } catch (err) {
+    const user = await prisma.user.upsert({
+      where: { supabaseId },
+      update: { email },
+      create: { supabaseId, email, name, role: 'ADMIN' },
+      select: { id: true, email: true, name: true, role: true },
+    })
+    res.json(user)
+  } catch (err: any) {
+    // Unique constraint violation — user already exists, just fetch them
+    if (err?.code === 'P2002') {
+      const user = await prisma.user.findUnique({
+        where: { supabaseId },
+        select: { id: true, email: true, name: true, role: true },
+      })
+      if (user) return res.json(user)
+    }
+    console.error('SYNC ERROR:', err)
     res.status(500).json({ error: 'Server error' })
   }
 })
 
-router.get('/me', async (req, res) => {
+// Get current user profile
+router.get('/me', requireAuth, async (req: AuthRequest, res) => {
   try {
-    const token = req.headers.authorization?.split(' ')[1]
-    if (!token) return res.status(401).json({ error: 'Unauthorized' })
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { id: string }
-    const user = await prisma.user.findUnique({ where: { id: decoded.id }, select: { id: true, email: true, name: true, role: true } })
+    const user = await prisma.user.findUnique({
+      where: { supabaseId: req.user!.id },
+      select: { id: true, email: true, name: true, role: true },
+    })
     if (!user) return res.status(404).json({ error: 'User not found' })
     res.json(user)
   } catch {
-    res.status(401).json({ error: 'Invalid token' })
+    res.status(500).json({ error: 'Server error' })
   }
 })
 

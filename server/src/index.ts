@@ -5,6 +5,7 @@ import authRoutes from './routes/auth'
 import staffRoutes from './routes/staff'
 import scheduleRoutes from './routes/schedule'
 import cityRoutes from './routes/cities'
+import shiftRoutes from './routes/shifts'
 
 dotenv.config()
 
@@ -20,6 +21,7 @@ app.use('/api/auth', authRoutes)
 app.use('/api/staff', staffRoutes)
 app.use('/api/schedule', scheduleRoutes)
 app.use('/api/cities', cityRoutes)
+app.use('/api/shifts', shiftRoutes)
 
 app.listen(PORT, () => console.log(`🚀 ProgramPilot server running on port ${PORT}`))
 
