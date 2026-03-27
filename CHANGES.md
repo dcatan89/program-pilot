@@ -2,20 +2,29 @@
 
 ---
 
-## [Done] Phase 4 — Deployment Config + CI
+## [Done] Phase 4 — Deployed to Railway + Vercel
+
+### Live URLs
+- **Client:** https://client-five-rho-26.vercel.app
+- **Server:** https://program-pilot-server-production.up.railway.app
+- **Health:** `GET /health` → `{"status":"ok","app":"ProgramPilot"}`
 
 ### Files Created
-- `server/railway.json` — Railway build/start/healthcheck config (root dir set to `server/` in Railway dashboard)
-- `client/vercel.json` — SPA routing rewrites so React Router paths (e.g. `/schedule`) don't 404 on direct access
-- `.github/workflows/ci.yml` — GitHub Actions CI: typechecks both server and client on every push/PR to `main`
+- `server/railway.json` — Railway build/start/healthcheck config
+- `client/vercel.json` — SPA routing rewrites (React Router paths don't 404)
+- `.github/workflows/ci.yml` — GitHub Actions: typechecks server + client on every push/PR to `main`
 
 ### Files Modified
-- `client/src/api/client.ts` — `baseURL` now reads `VITE_API_URL` env var; dev still works via Vite proxy (unset = `/api`), prod points to Railway URL
-- `server/package.json` — build script now runs `prisma generate && tsc` (Prisma Client must be generated before TypeScript compiles in Railway)
-- `server/package.json` + `client/package.json` — added `engines: { node: ">=20.0.0" }` for Railway and Vercel
+- `client/src/api/client.ts` — `baseURL` reads `VITE_API_URL` env var; dev unchanged (Vite proxy), prod → Railway URL
+- `server/package.json` — build: `prisma generate && tsc`; added `engines: { node: ">=20.0.0" }`
+- `client/package.json` — added `engines: { node: ">=20.0.0" }`
 
-### Manual Steps Required (after pushing)
-See ROADMAP.md Phase 4 for step-by-step Railway + Vercel setup instructions and the full list of environment variables to set on each platform.
+### Environment Variables Set
+**Railway:** `NODE_ENV`, `DATABASE_URL`, `DIRECT_URL`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `CLIENT_URL`
+**Vercel:** `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_API_URL`
+
+### Remaining Manual Step
+Add `https://client-five-rho-26.vercel.app` to Supabase Auth → URL Configuration (Site URL + Redirect URLs) for Google OAuth to work in production.
 
 ---
 

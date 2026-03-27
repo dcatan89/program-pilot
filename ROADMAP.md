@@ -32,32 +32,32 @@ Staff scheduling grid with shift management.
 
 ---
 
-## Phase 3 — Production Hardening 🔲
+## Phase 3 — Production Hardening ✅
 Make the app safe and stable for real use.
 
-| Feature | Priority | Notes |
-|---------|----------|-------|
-| Input validation (Zod on all API routes) | High | Prevents bad data from hitting the DB |
-| Rate limiting (express-rate-limit) | High | Protect API from abuse |
-| Security headers (helmet.js) | High | XSS, clickjacking, MIME sniffing protection |
-| React error boundaries | High | Prevent full UI crash on component errors |
-| Health check endpoint (`GET /health`) | Medium | Required for any hosting platform |
-| Structured logging (pino or winston) | Medium | Visibility in production |
-| Pagination on shifts query | Medium | Prevent slow queries as data grows |
-| Graceful server shutdown | Low | Clean process exit on SIGTERM |
+| Feature | Priority | Status |
+|---------|----------|--------|
+| Input validation (Zod on all API routes) | High | ✅ |
+| Rate limiting (express-rate-limit) | High | ✅ |
+| Security headers (helmet.js) | High | ✅ |
+| React error boundaries | High | ✅ |
+| Health check endpoint (`GET /health`) | Medium | ✅ |
+| Structured logging (pino) | Medium | ✅ |
+| Graceful server shutdown | Low | ✅ |
+| Pagination on shifts query | Medium | 🔲 (deferred — date range is bounded to 90 days) |
 
 ---
 
-## Phase 4 — Deployment 🔲
+## Phase 4 — Deployment ✅
 Get the app running on a real URL.
 
-| Feature | Priority | Notes |
-|---------|----------|-------|
-| Server deployment (Railway or Fly.io) | High | Host the Express API |
-| Client deployment (Vercel) | High | Host the React app |
-| Production environment variables | High | Separate from local .env |
-| Custom domain | Low | After initial deploy is stable |
-| CI/CD (GitHub Actions) | Low | Auto-deploy on push to main |
+| Feature | Priority | Status |
+|---------|----------|--------|
+| Server deployment (Railway) | High | ✅ https://program-pilot-server-production.up.railway.app |
+| Client deployment (Vercel) | High | ✅ https://client-five-rho-26.vercel.app |
+| Production environment variables | High | ✅ |
+| CI/CD (GitHub Actions — typecheck on push) | Low | ✅ |
+| Custom domain | Low | 🔲 |
 
 ---
 
