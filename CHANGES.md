@@ -2,6 +2,34 @@
 
 ---
 
+## [Done] Phase 3 — Production Hardening
+
+### Packages Added (Server)
+- `helmet` — HTTP security headers (CSP, X-Frame-Options, HSTS, etc.)
+- `express-rate-limit` — 200 req / 15 min per IP on all `/api` routes
+- `pino` + `pino-http` + `pino-pretty` — structured request logging
+
+### Files Created
+- `server/src/lib/logger.ts` — pino logger singleton (pretty in dev, JSON in prod)
+- `server/src/lib/validate.ts` — `validateBody` / `validateQuery` Zod middleware helpers + shared primitives (`z_cuid`, `z_isoDate`, `z_hhmm`, `z_hexColor`, `z_sessionType`)
+- `client/src/components/ErrorBoundary.tsx` — React class error boundary; shows friendly fallback UI + Reload button on unhandled render errors
+
+### Files Modified
+- `server/src/index.ts` — added helmet, rate limiter, pino-http request logger, graceful SIGTERM/SIGINT shutdown (closes HTTP server + disconnects Prisma)
+- `server/src/routes/shifts.ts` — Zod validation on GET (date range, max 90 days), POST (all fields typed + required), PUT (all optional)
+- `server/src/routes/staff.ts` — Zod validation on POST/PUT; added try-catch to all handlers
+- `server/src/routes/cities.ts` — Zod validation on POST/PUT; added try-catch to all handlers
+- `server/src/routes/schedule.ts` — Zod validation on all mutations; PUT /sessions/:id now whitelists fields (was passing raw `req.body` to Prisma); added try-catch to all handlers
+- `server/src/routes/auth.ts` — Zod validation on POST /sync; replaced `console.error` with `logger.error`
+- `client/src/App.tsx` — wrapped `<Layout />` in `<ErrorBoundary>`
+
+### Verified
+- Helmet security headers present on all responses (`Content-Security-Policy`, `X-Frame-Options`, `Strict-Transport-Security`, etc.)
+- Rate limit headers present (`RateLimit-Limit: 200`, `RateLimit-Remaining`, `RateLimit-Reset`)
+- TypeScript clean on both client and server
+
+---
+
 ## [Done] Visual Shift Blocks + Bug Fixes
 **Status:** Working — shifts save, display as colored blocks, resize and move
 

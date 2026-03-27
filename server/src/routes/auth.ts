@@ -1,11 +1,16 @@
 import { Router } from 'express'
+import { z } from 'zod'
 import { prisma } from '../lib/prisma'
 import { requireAuth, AuthRequest } from '../middleware/auth'
+import { logger } from '../lib/logger'
+import { validateBody } from '../lib/validate'
 
 const router = Router()
 
+const syncSchema = z.object({ name: z.string().max(100).optional() })
+
 // Upsert a User row after Supabase Auth login (Google or email)
-router.post('/sync', requireAuth, async (req: AuthRequest, res) => {
+router.post('/sync', requireAuth, validateBody(syncSchema), async (req: AuthRequest, res) => {
   const { id: supabaseId, email } = req.user!
   const name = (req.body.name as string) || email.split('@')[0]
   try {
@@ -25,7 +30,7 @@ router.post('/sync', requireAuth, async (req: AuthRequest, res) => {
       })
       if (user) return res.json(user)
     }
-    console.error('SYNC ERROR:', err)
+    logger.error(err, 'SYNC ERROR')
     res.status(500).json({ error: 'Server error' })
   }
 })

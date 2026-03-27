@@ -6,6 +6,7 @@ import Schedule from './pages/Schedule'
 import Staff from './pages/Staff'
 import Programs from './pages/Programs'
 import Layout from './components/layout/Layout'
+import ErrorBoundary from './components/ErrorBoundary'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
@@ -29,7 +30,9 @@ export default function App() {
           path="/"
           element={
             <ProtectedRoute>
-              <Layout />
+              <ErrorBoundary>
+                <Layout />
+              </ErrorBoundary>
             </ProtectedRoute>
           }
         >
