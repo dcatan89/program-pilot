@@ -2,6 +2,23 @@
 
 ---
 
+## [Done] Phase 4 — Deployment Config + CI
+
+### Files Created
+- `server/railway.json` — Railway build/start/healthcheck config (root dir set to `server/` in Railway dashboard)
+- `client/vercel.json` — SPA routing rewrites so React Router paths (e.g. `/schedule`) don't 404 on direct access
+- `.github/workflows/ci.yml` — GitHub Actions CI: typechecks both server and client on every push/PR to `main`
+
+### Files Modified
+- `client/src/api/client.ts` — `baseURL` now reads `VITE_API_URL` env var; dev still works via Vite proxy (unset = `/api`), prod points to Railway URL
+- `server/package.json` — build script now runs `prisma generate && tsc` (Prisma Client must be generated before TypeScript compiles in Railway)
+- `server/package.json` + `client/package.json` — added `engines: { node: ">=20.0.0" }` for Railway and Vercel
+
+### Manual Steps Required (after pushing)
+See ROADMAP.md Phase 4 for step-by-step Railway + Vercel setup instructions and the full list of environment variables to set on each platform.
+
+---
+
 ## [Done] Phase 3 — Production Hardening
 
 ### Packages Added (Server)
