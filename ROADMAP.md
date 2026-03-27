@@ -61,18 +61,18 @@ Get the app running on a real URL.
 
 ---
 
-## Phase 5 — Program & Season Management 🔲
+## Phase 5 — Program & Season Management ✅
 Core domain features beyond scheduling.
 
-| Feature | Priority | Notes |
-|---------|----------|-------|
-| Season CRUD | High | Create/archive seasons |
-| Program CRUD | High | Programs belong to seasons |
-| Session CRUD | High | Sessions tied to programs, cities, dates |
-| Staff assignment to sessions | High | Link staff to specific sessions |
-| No-class dates per session | Medium | Mark blackout dates |
-| External programs (conflict tracking) | Medium | Track outside programs that overlap |
-| Conflict detection | Medium | Flag staff assigned to overlapping sessions |
+| Feature | Priority | Status |
+|---------|----------|--------|
+| Season CRUD | High | ✅ |
+| Program CRUD | High | ✅ |
+| Session CRUD | High | ✅ |
+| Staff assignment to sessions | High | ✅ |
+| No-class dates per session | Medium | ✅ |
+| External programs (conflict tracking) | Medium | ✅ |
+| Conflict detection | Medium | ✅ |
 
 ---
 

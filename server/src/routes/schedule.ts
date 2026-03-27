@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { prisma } from '../lib/prisma'
 import { requireAuth } from '../middleware/auth'
 import { logger } from '../lib/logger'
-import { validateBody, z_cuid, z_isoDate, z_hhmm, z_sessionType } from '../lib/validate'
+import { validateBody, z_cuid, z_isoDate, z_hhmm, z_hexColor, z_sessionType } from '../lib/validate'
 
 const router = Router()
 router.use(requireAuth)
@@ -157,6 +157,155 @@ router.delete('/assign/:staffId/:sessionId', async (req, res) => {
     res.json({ success: true })
   } catch (err) {
     logger.error(err, 'DELETE /assign failed')
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
+// Season schemas
+const seasonCreateSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  year: z.number().int(),
+  isActive: z.boolean().optional(),
+})
+const seasonUpdateSchema = z.object({
+  name: z.string().min(1).optional(),
+  year: z.number().int().optional(),
+  isActive: z.boolean().optional(),
+})
+
+// Program schemas
+const programUpdateSchema = z.object({ name: z.string().min(1, 'Name is required') })
+
+// External program schemas
+const externalCreateSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  startDate: z_isoDate,
+  endDate: z_isoDate,
+  color: z_hexColor.optional(),
+  notes: z.string().optional(),
+})
+const externalUpdateSchema = externalCreateSchema.partial()
+
+// Create season
+router.post('/seasons', validateBody(seasonCreateSchema), async (req, res) => {
+  try {
+    const { name, year, isActive } = req.body
+    const season = await prisma.season.create({ data: { name, year, isActive: isActive ?? true } })
+    res.status(201).json(season)
+  } catch (err) {
+    logger.error(err, 'POST /seasons failed')
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
+// Update season
+router.put('/seasons/:id', validateBody(seasonUpdateSchema), async (req, res) => {
+  try {
+    const { name, year, isActive } = req.body
+    const season = await prisma.season.update({
+      where: { id: req.params.id },
+      data: {
+        ...(name !== undefined && { name }),
+        ...(year !== undefined && { year }),
+        ...(isActive !== undefined && { isActive }),
+      },
+    })
+    res.json(season)
+  } catch (err) {
+    logger.error(err, 'PUT /seasons/:id failed')
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
+// Delete season
+router.delete('/seasons/:id', async (req, res) => {
+  try {
+    await prisma.season.delete({ where: { id: req.params.id } })
+    res.json({ success: true })
+  } catch (err) {
+    logger.error(err, 'DELETE /seasons/:id failed')
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
+// Update program
+router.put('/programs/:id', validateBody(programUpdateSchema), async (req, res) => {
+  try {
+    const program = await prisma.program.update({
+      where: { id: req.params.id },
+      data: { name: req.body.name },
+    })
+    res.json(program)
+  } catch (err) {
+    logger.error(err, 'PUT /programs/:id failed')
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
+// Delete program
+router.delete('/programs/:id', async (req, res) => {
+  try {
+    await prisma.program.delete({ where: { id: req.params.id } })
+    res.json({ success: true })
+  } catch (err) {
+    logger.error(err, 'DELETE /programs/:id failed')
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
+// List external programs
+router.get('/external', async (_req, res) => {
+  try {
+    const externals = await prisma.externalProgram.findMany({ orderBy: { startDate: 'asc' } })
+    res.json(externals)
+  } catch (err) {
+    logger.error(err, 'GET /external failed')
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
+// Create external program
+router.post('/external', validateBody(externalCreateSchema), async (req, res) => {
+  try {
+    const { name, startDate, endDate, color, notes } = req.body
+    const ext = await prisma.externalProgram.create({
+      data: { name, startDate: new Date(startDate), endDate: new Date(endDate), color: color ?? '#F97316', notes: notes || null },
+    })
+    res.status(201).json(ext)
+  } catch (err) {
+    logger.error(err, 'POST /external failed')
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
+// Update external program
+router.put('/external/:id', validateBody(externalUpdateSchema), async (req, res) => {
+  try {
+    const { name, startDate, endDate, color, notes } = req.body
+    const ext = await prisma.externalProgram.update({
+      where: { id: req.params.id },
+      data: {
+        ...(name !== undefined && { name }),
+        ...(startDate !== undefined && { startDate: new Date(startDate) }),
+        ...(endDate !== undefined && { endDate: new Date(endDate) }),
+        ...(color !== undefined && { color }),
+        ...(notes !== undefined && { notes: notes || null }),
+      },
+    })
+    res.json(ext)
+  } catch (err) {
+    logger.error(err, 'PUT /external/:id failed')
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
+// Delete external program
+router.delete('/external/:id', async (req, res) => {
+  try {
+    await prisma.externalProgram.delete({ where: { id: req.params.id } })
+    res.json({ success: true })
+  } catch (err) {
+    logger.error(err, 'DELETE /external/:id failed')
     res.status(500).json({ error: 'Server error' })
   }
 })

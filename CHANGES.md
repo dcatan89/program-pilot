@@ -2,6 +2,23 @@
 
 ---
 
+## [Done] Phase 5 — Program & Season Management
+
+### Files Modified
+- `server/src/routes/schedule.ts` — added 9 new endpoints: POST/PUT/DELETE /seasons, PUT/DELETE /programs, GET/POST/PUT/DELETE /external
+- `client/src/pages/Programs.tsx` — major enhancement: tabs (Programs / External Programs), season management modal (create/edit/delete), program rename/delete, session edit modal with no-class dates, staff assignment modal with checkbox list, external programs tab with CRUD, conflicts banner
+
+### What's New
+- **Seasons**: Create, rename, toggle active, delete seasons from a modal (Manage Seasons button)
+- **Programs**: Rename and delete programs inline (Edit / Delete buttons per program card)
+- **Sessions**: Edit all session fields + manage no-class dates (date chips + date picker); session modal is shared for add and edit
+- **Staff assignment**: Click "Assign" on any session row → checkbox list of all active staff; toggle assigns/unassigns; first assigned = primary
+- **No-class dates**: Add/remove individual blackout dates from the session edit modal; shown as count in session row
+- **External programs**: Separate tab; CRUD for external programs with color picker, date range, notes
+- **Conflicts banner**: Auto-detected scheduling conflicts (same staff on overlapping sessions) shown as a yellow warning banner above the program list
+
+---
+
 ## [Done] Phase 4 — Deployed to Railway + Vercel
 
 ### Live URLs
