@@ -9,7 +9,8 @@
 - `server/prisma/schema.prisma` — made `password` optional, added `supabaseId String? @unique` to User model
 - `server/src/middleware/auth.ts` — replaced custom JWT verify with `supabase.auth.getUser(token)`
 - `server/src/routes/auth.ts` — removed `/login` endpoint, added `/sync` (upsert user on first OAuth login), updated `/me` to look up by `supabaseId`
-- `server/.env` — replaced `JWT_SECRET` / `SUPABASE_JWT_SECRET` with `SUPABASE_URL` + `SUPABASE_ANON_KEY`; added `?pgbouncer=true` to DATABASE_URL to fix prepared statement errors with pgBouncer transaction pooler
+- `server/.env` — replaced `JWT_SECRET` / `SUPABASE_JWT_SECRET` with `SUPABASE_URL` + `SUPABASE_ANON_KEY`; added `?pgbouncer=true` to DATABASE_URL; added `DIRECT_URL` (session pooler port 5432) so `prisma db push` works automatically
+- `server/prisma/schema.prisma` — added `directUrl = env("DIRECT_URL")` so Prisma uses session pooler for migrations
 - `client/src/hooks/useAuth.ts` — replaced axios-based auth with Supabase Auth (email + Google OAuth)
 - `client/src/pages/Login.tsx` — added Google sign-in button
 - `client/src/lib/supabase.ts` — **new file**, Supabase client singleton
