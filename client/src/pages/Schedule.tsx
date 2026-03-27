@@ -217,6 +217,7 @@ export default function Schedule() {
   const [dragOver, setDragOver] = useState<string | null>(null) // "staffId|dateISO"
   const [resizePreview, setResizePreview] = useState<{ shiftId: string; endTime: string } | null>(null)
   const resizeRef = useRef<{ shiftId: string; startY: number; origEndTime: string; origStartTime: string } | null>(null)
+  const resizePreviewRef = useRef<{ shiftId: string; endTime: string } | null>(null)
 
   const dateRange = (() => {
     if (viewMode === 'week') {
@@ -275,25 +276,29 @@ export default function Schedule() {
       const origMins = timeToMinutes(resizeRef.current.origEndTime)
       const startMins = timeToMinutes(resizeRef.current.origStartTime)
       const newMins = Math.max(startMins + 15, origMins + deltaMinutes)
-      setResizePreview({ shiftId: resizeRef.current.shiftId, endTime: minutesToTime(newMins) })
+      const preview = { shiftId: resizeRef.current.shiftId, endTime: minutesToTime(newMins) }
+      resizePreviewRef.current = preview
+      setResizePreview(preview)
     }
 
     const onMouseUp = async () => {
       document.removeEventListener('mousemove', onMouseMove)
       document.removeEventListener('mouseup', onMouseUp)
-      if (resizeRef.current && resizePreview) {
+      const preview = resizePreviewRef.current
+      if (resizeRef.current && preview) {
         try {
-          await api.put(`/shifts/${resizeRef.current.shiftId}`, { endTime: resizePreview.endTime })
+          await api.put(`/shifts/${resizeRef.current.shiftId}`, { endTime: preview.endTime })
           await loadShifts()
         } catch (e) { /* ignore */ }
       }
       resizeRef.current = null
+      resizePreviewRef.current = null
       setResizePreview(null)
     }
 
     document.addEventListener('mousemove', onMouseMove)
     document.addEventListener('mouseup', onMouseUp)
-  }, [resizePreview, loadShifts])
+  }, [loadShifts])
 
   // ── Drag-to-move handlers ──────────────────────────────────────────────
   const handleDrop = async (e: React.DragEvent, staffId: string, day: Date) => {
@@ -417,7 +422,8 @@ export default function Schedule() {
                     {/* Day cells */}
                     {days.map(day => {
                       const cellKey = `${s.id}|${day.toISOString()}`
-                      const dayShifts = staffShifts.filter(sh => isSameDay(parseISO(sh.date), day))
+                      const dayStr = format(day, 'yyyy-MM-dd')
+                      const dayShifts = staffShifts.filter(sh => sh.date.slice(0, 10) === dayStr)
                       const isToday = isSameDay(day, new Date())
                       const isDragOver = dragOver === cellKey
 

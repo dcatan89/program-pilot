@@ -56,17 +56,18 @@ router.post('/', async (req, res) => {
 // PUT /shifts/:id
 router.put('/:id', async (req, res) => {
   try {
-    const { cityId, date, startTime, endTime, location, sessionType, notes } = req.body
+    const { staffId, cityId, date, startTime, endTime, location, sessionType, notes } = req.body
     const shift = await prisma.shift.update({
       where: { id: req.params.id },
       data: {
-        cityId,
-        date: date ? new Date(date) : undefined,
-        startTime,
-        endTime,
-        location,
-        sessionType,
-        notes: notes || null,
+        ...(staffId !== undefined && { staffId }),
+        ...(cityId !== undefined && { cityId }),
+        ...(date !== undefined && { date: new Date(date) }),
+        ...(startTime !== undefined && { startTime }),
+        ...(endTime !== undefined && { endTime }),
+        ...(location !== undefined && { location }),
+        ...(sessionType !== undefined && { sessionType }),
+        ...(notes !== undefined && { notes: notes || null }),
       },
       include: { staff: true, city: true },
     })
