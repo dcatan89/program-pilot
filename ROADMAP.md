@@ -76,16 +76,16 @@ Core domain features beyond scheduling.
 
 ---
 
-## Phase 6 — Staff Management 🔲
+## Phase 6 — Staff Management ✅
 Staff profiles and city clearances.
 
-| Feature | Priority | Notes |
-|---------|----------|-------|
-| Staff list page | High | View/edit all staff |
-| Add / deactivate staff | High | |
-| City clearance management | Medium | Which cities a staff member can work |
-| Staff availability / time off | Medium | Block out dates per staff |
-| Staff notes and contact info | Low | |
+| Feature | Priority | Status |
+|---------|----------|--------|
+| Staff list page | High | ✅ |
+| Add / deactivate staff | High | ✅ |
+| City clearance management | Medium | ✅ |
+| Staff availability / time off | Medium | ✅ |
+| Staff notes and contact info | Low | ✅ |
 
 ---
 

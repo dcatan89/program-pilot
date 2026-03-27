@@ -2,6 +2,19 @@
 
 ---
 
+## [Done] Phase 6 — Staff Management (Availability / Time Off)
+
+### What Was Already Complete
+Staff list, add/edit, deactivation, city clearances, and contact info were all implemented in previous phases.
+
+### What Was Added
+- **`StaffAvailability` model** — new Prisma model with staffId, startDate, endDate, note?; migrated via `prisma db push`
+- **3 new server endpoints** (`server/src/routes/staff.ts`): GET /staff/:id/availability, POST /staff/:id/availability, DELETE /staff/:id/availability/:blockId
+- **Client types** (`client/src/types/index.ts`): added `StaffAvailability` interface; added optional `availability` field to `Staff`
+- **Staff edit panel** (`client/src/pages/Staff.tsx`): "Time Off / Unavailability" section appears when editing a staff member — shows existing blocks as orange chips with delete (×), plus date-range + note form to add new blocks
+
+---
+
 ## [Done] Phase 5 — Program & Season Management
 
 ### Files Modified

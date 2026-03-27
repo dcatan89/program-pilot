@@ -11,6 +11,13 @@ export interface City {
   color: string
 }
 
+export interface StaffAvailability {
+  id: string
+  startDate: string
+  endDate: string
+  note?: string
+}
+
 export interface Staff {
   id: string
   name: string
@@ -19,6 +26,7 @@ export interface Staff {
   notes?: string
   isActive: boolean
   clearedCities: { city: City }[]
+  availability?: StaffAvailability[]
 }
 
 export interface Program {

@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { prisma } from '../lib/prisma'
 import { requireAuth } from '../middleware/auth'
 import { logger } from '../lib/logger'
-import { validateBody, z_cuid } from '../lib/validate'
+import { validateBody, z_cuid, z_isoDate } from '../lib/validate'
 
 const router = Router()
 router.use(requireAuth)
@@ -40,6 +40,7 @@ router.get('/:id', async (req, res) => {
       include: {
         clearedCities: { include: { city: true } },
         assignments: { include: { session: { include: { city: true, program: true } } } },
+        availability: { orderBy: { startDate: 'asc' } },
       },
     })
     if (!staff) return res.status(404).json({ error: 'Not found' })
@@ -103,6 +104,54 @@ router.delete('/:id', async (req, res) => {
     res.json({ success: true })
   } catch (err) {
     logger.error(err, 'DELETE /staff/:id failed')
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
+// Availability (time off) endpoints
+const availabilitySchema = z.object({
+  startDate: z_isoDate,
+  endDate:   z_isoDate,
+  note:      z.string().optional(),
+})
+
+router.get('/:id/availability', async (req, res) => {
+  try {
+    const blocks = await prisma.staffAvailability.findMany({
+      where: { staffId: req.params.id },
+      orderBy: { startDate: 'asc' },
+    })
+    res.json(blocks)
+  } catch (err) {
+    logger.error(err, 'GET /staff/:id/availability failed')
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
+router.post('/:id/availability', validateBody(availabilitySchema), async (req, res) => {
+  try {
+    const { startDate, endDate, note } = req.body
+    const block = await prisma.staffAvailability.create({
+      data: {
+        staffId: req.params.id,
+        startDate: new Date(startDate),
+        endDate: new Date(endDate),
+        note: note || null,
+      },
+    })
+    res.status(201).json(block)
+  } catch (err) {
+    logger.error(err, 'POST /staff/:id/availability failed')
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
+router.delete('/:id/availability/:blockId', async (req, res) => {
+  try {
+    await prisma.staffAvailability.delete({ where: { id: req.params.blockId } })
+    res.json({ success: true })
+  } catch (err) {
+    logger.error(err, 'DELETE /staff/:id/availability/:blockId failed')
     res.status(500).json({ error: 'Server error' })
   }
 })

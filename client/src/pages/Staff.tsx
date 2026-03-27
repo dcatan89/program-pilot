@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import api from '../api/client'
-import { Staff, City } from '../types'
+import { Staff, City, StaffAvailability } from '../types'
+import { format, parseISO } from 'date-fns'
 import clsx from 'clsx'
 
 const EMPTY_FORM = { name: '', email: '', phone: '', notes: '', cityIds: [] as string[] }
@@ -15,6 +16,11 @@ export default function StaffPage() {
   const [form, setForm] = useState(EMPTY_FORM)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [availability, setAvailability] = useState<StaffAvailability[]>([])
+  const [availStartDate, setAvailStartDate] = useState('')
+  const [availEndDate, setAvailEndDate] = useState('')
+  const [availNote, setAvailNote] = useState('')
+  const [addingAvail, setAddingAvail] = useState(false)
 
   const load = async () => {
     const [s, c] = await Promise.all([api.get<Staff[]>('/staff'), api.get<City[]>('/cities')])
@@ -32,7 +38,7 @@ export default function StaffPage() {
     setShowForm(true)
   }
 
-  const openEdit = (s: Staff) => {
+  const openEdit = async (s: Staff) => {
     setEditId(s.id)
     setForm({
       name: s.name,
@@ -41,7 +47,12 @@ export default function StaffPage() {
       notes: s.notes ?? '',
       cityIds: s.clearedCities.map(c => c.city.id),
     })
+    setAvailStartDate('')
+    setAvailEndDate('')
+    setAvailNote('')
     setError('')
+    const r = await api.get<StaffAvailability[]>(`/staff/${s.id}/availability`)
+    setAvailability(r.data)
     setShowForm(true)
   }
 
@@ -80,6 +91,27 @@ export default function StaffPage() {
     s.name.toLowerCase().includes(search.toLowerCase()) ||
     (s.email?.toLowerCase().includes(search.toLowerCase()) ?? false)
   )
+
+  const handleAddAvailability = async () => {
+    if (!editId || !availStartDate || !availEndDate) return
+    setAddingAvail(true)
+    const r = await api.post<StaffAvailability>(`/staff/${editId}/availability`, {
+      startDate: availStartDate,
+      endDate: availEndDate,
+      note: availNote || undefined,
+    })
+    setAvailability(prev => [...prev, r.data].sort((a, b) => a.startDate.localeCompare(b.startDate)))
+    setAvailStartDate('')
+    setAvailEndDate('')
+    setAvailNote('')
+    setAddingAvail(false)
+  }
+
+  const handleDeleteAvailability = async (blockId: string) => {
+    if (!editId) return
+    await api.delete(`/staff/${editId}/availability/${blockId}`)
+    setAvailability(prev => prev.filter(a => a.id !== blockId))
+  }
 
   const toggleCity = (id: string) => {
     setForm(f => ({
@@ -263,6 +295,61 @@ export default function StaffPage() {
                   ))}
                 </div>
               </div>
+
+              {/* Availability / Time Off — only shown in edit mode */}
+              {editId && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Time Off / Unavailability</label>
+                  {availability.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mb-2">
+                      {availability.map(block => (
+                        <span key={block.id} className="inline-flex items-center gap-1 text-xs bg-orange-50 border border-orange-200 text-orange-700 px-2 py-1 rounded-full">
+                          {format(parseISO(block.startDate), 'MMM d')} – {format(parseISO(block.endDate), 'MMM d, yyyy')}
+                          {block.note && <span className="text-orange-500"> · {block.note}</span>}
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteAvailability(block.id)}
+                            className="ml-0.5 hover:text-red-500 font-bold"
+                          >×</button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  <div className="space-y-2">
+                    <div className="grid grid-cols-2 gap-2">
+                      <input
+                        type="date"
+                        value={availStartDate}
+                        onChange={e => setAvailStartDate(e.target.value)}
+                        className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-light"
+                      />
+                      <input
+                        type="date"
+                        value={availEndDate}
+                        onChange={e => setAvailEndDate(e.target.value)}
+                        className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-light"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={availNote}
+                        onChange={e => setAvailNote(e.target.value)}
+                        placeholder="Note (optional, e.g. Vacation)"
+                        className="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-light"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleAddAvailability}
+                        disabled={addingAvail || !availStartDate || !availEndDate}
+                        className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-600 disabled:opacity-40"
+                      >
+                        {addingAvail ? '...' : 'Add'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {error && <p className="text-red-500 text-sm">{error}</p>}
             </div>

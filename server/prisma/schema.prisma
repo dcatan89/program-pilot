@@ -34,6 +34,7 @@ model Staff {
   clearedCities StaffCity[]
   assignments   StaffAssignment[]
   shifts        Shift[]
+  availability  StaffAvailability[]
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
 }
@@ -129,6 +130,16 @@ model StaffAssignment {
   createdAt DateTime @default(now())
 
   @@unique([staffId, sessionId])
+}
+
+model StaffAvailability {
+  id        String   @id @default(cuid())
+  staff     Staff    @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  staffId   String
+  startDate DateTime
+  endDate   DateTime
+  note      String?
+  createdAt DateTime @default(now())
 }
 
 model ExternalProgram {
